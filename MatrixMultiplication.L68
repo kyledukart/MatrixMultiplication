@@ -1,0 +1,154 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.16.01
+Created On: 11/25/2019 3:19:13 PM
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      : 4v4 Matrix Multiplication
+00000000                             3  * Written by : Kyle Dukart
+00000000                             4  * Date       : 11/15/19
+00000000                             5  * Description: This program takes in two 4x4 matrices and multiplies them.
+00000000                             6  *-----------------------------------------------------------
+00000000                             7  
+00000000  =00000004                  8  A_rows      equ 4
+00000000  =00000004                  9  A_columns   equ 4
+00000000  =00000004                 10  B_rows      equ 4
+00000000  =00000004                 11  B_columns   equ 4
+00000000                            12  
+00000000  =00004500                 13  A_Array     equ $4500
+00000000  =00005000                 14  B_Array     equ $5000
+00000000  =00005500                 15  Ans_Array   equ $5500
+00000000  =00000002                 16  word        equ 2
+00000000                            17  
+00000000                            18  
+00001000                            19      ORG    $1000
+00001000                            20  START:                  ; first instruction of program
+00001000                            21  
+00001000                            22  * set test data *
+00001000                            23  
+00001000  307C 4500                 24      MOVEA.W #A_Array,A0     ; move pointer to first array in A0
+00001004  327C 5000                 25      MOVEA.W #B_Array,A1     ; move pointer to second array in A1
+00001008                            26      
+00001008  30FC 0002                 27      MOVE.W  #2, (A0)+
+0000100C  30FC 0003                 28      MOVE.W  #3, (A0)+
+00001010  30FC 0004                 29      MOVE.W  #4, (A0)+
+00001014  30FC 0005                 30      MOVE.W  #5, (A0)+
+00001018  30FC 0001                 31      MOVE.W  #1, (A0)+
+0000101C  30FC 0001                 32      MOVE.W  #1, (A0)+
+00001020  30FC 0001                 33      MOVE.W  #1, (A0)+
+00001024  30FC 0001                 34      MOVE.W  #1, (A0)+
+00001028  30FC 0002                 35      MOVE.W  #2, (A0)+
+0000102C  30FC 0002                 36      MOVE.W  #2, (A0)+
+00001030  30FC 0002                 37      MOVE.W  #2, (A0)+
+00001034  30FC 0002                 38      MOVE.W  #2, (A0)+
+00001038  30FC 0003                 39      MOVE.W  #3, (A0)+
+0000103C  30FC 0004                 40      MOVE.W  #4, (A0)+
+00001040  30FC 0005                 41      MOVE.W  #5, (A0)+
+00001044  30FC 0006                 42      MOVE.W  #6, (A0)+
+00001048                            43       
+00001048  32FC 0003                 44      MOVE.W  #3, (A1)+
+0000104C  32FC 0003                 45      MOVE.W  #3, (A1)+
+00001050  32FC 0003                 46      MOVE.W  #3, (A1)+
+00001054  32FC 0003                 47      MOVE.W  #3, (A1)+
+00001058  32FC 0004                 48      MOVE.W  #4, (A1)+
+0000105C  32FC 0004                 49      MOVE.W  #4, (A1)+
+00001060  32FC 0005                 50      MOVE.W  #5, (A1)+
+00001064  32FC 0005                 51      MOVE.W  #5, (A1)+
+00001068  32FC 0006                 52      MOVE.W  #6, (A1)+
+0000106C  32FC 0006                 53      MOVE.W  #6, (A1)+
+00001070  32FC 0007                 54      MOVE.W  #7, (A1)+
+00001074  32FC 0007                 55      MOVE.W  #7, (A1)+
+00001078  32FC 0008                 56      MOVE.W  #8, (A1)+
+0000107C  32FC 0008                 57      MOVE.W  #8, (A1)+
+00001080  32FC 0009                 58      MOVE.W  #9, (A1)+
+00001084  32FC 0009                 59      MOVE.W  #9, (A1)+
+00001088                            60  
+00001088                            61  
+00001088                            62  * end test data input *
+00001088                            63  
+00001088  307C 4500                 64      MOVEA.W #A_Array,A0     ; move pointer to first array in A0
+0000108C  327C 5000                 65      MOVEA.W #B_Array,A1     ; move pointer to second array in A1
+00001090  347C 5500                 66      MOVEA.W #Ans_Array,A2   ; move pointer to answer array in A2
+00001094                            67      
+00001094  343C 0004                 68      MOVE.W #A_columns, D2   ; move number of columns in matrix A to D2 for comparison
+00001098  B47C 0004                 69      CMP.W #B_rows, D2       ; compare B rows to A columns
+0000109C  6700 0012                 70      BEQ Valid_columns       ; branch if equal
+000010A0  43F9 0000110E             71      LEA ERRORMSG, A1
+000010A6  303C 000E                 72      MOVE #14,D0
+000010AA  4E4F                      73      TRAP #15
+000010AC  6000 005C                 74      BRA Stop
+000010B0                            75      
+000010B0                            76  Valid_columns:
+000010B0                            77      
+000010B0  4240                      78      CLR     D0              ; D0 used as offset for traversing A
+000010B2  4241                      79      CLR     D1              ; D1 used as offset for traversing B
+000010B4  4242                      80      CLR     D2              ; D2 used as offset for traversing Ans
+000010B6  363C 0004                 81      MOVE.W  #A_rows,D3       ; store number of A rows in D3
+000010BA  4244                      82      CLR     D4              ; D4 is a row counter used to find the end of loop 1
+000010BC  4246                      83      CLR     D6              ; D6 stores the multiplication result
+000010BE  4247                      84      CLR     D7              ; D7 stores the sum result
+000010C0                            85  
+000010C0                            86  Loop1:                      ; traverse to each spot in Ans
+000010C0  4247                      87      CLR.W   D7
+000010C2  3A3C 0004                 88      MOVE.W  #B_Columns,D5   ; D5 is a column counter to find end of loop2
+000010C6                            89  Loop2:                      ; calculate the sum for a single position in the matrix
+000010C6  4246                      90      CLR     D6              ; clear the sum
+000010C8  3C30 0000                 91      MOVE.W  (A0,D0.W),D6    ; move current value in A into D7
+000010CC  CDF1 1000                 92      MULS    (A1,D1.W),D6    ; multiply 
+000010D0  DE46                      93      ADD.W   D6,D7           ; add the current multiplication result to the sum
+000010D2  5440                      94      ADD.W   #word,D0        ; increment A's offset
+000010D4  5841                      95      ADD.W   #B_Columns,D1   ; add #B_Columns to B's offset
+000010D6  5841                      96      ADD.W   #B_Columns,D1   ; add a second time to increment by words not bytes
+000010D8  5345                      97      SUB.W   #1,D5           ; decrement column counter
+000010DA  66EA                      98      BNE Loop2               ; if not equal then continue looping
+000010DC  3587 2000                 99      MOVE.W  D7,(A2,D2.W)    ; put value into the answer array
+000010E0  5442                     100      ADD.W   #word,D2        ; increment the Ans Offset
+000010E2  5244                     101      ADD.W   #1,D4           ; increment row counter
+000010E4  B87C 0004                102      CMP.W   #B_Columns,D4   ; compare row counter to number of rows
+000010E8  6600 000E                103      BNE Next_Column         ; we are still in the same row, move to next column
+000010EC  4244                     104      CLR.W   D4              ; clear row counter, we are in a new row
+000010EE  4241                     105      CLR.W   D1              ; clear offset for matrix B
+000010F0  5343                     106      SUB.W   #1,D3           ; decrement number of rows
+000010F2  66CC                     107      BNE Loop1               ; we have more rows to traverse, go to loop1
+000010F4  6000 0014                108      BRA Stop                ; no more rows to traverse, finished with matrix mult
+000010F8                           109      
+000010F8                           110  Next_Column:
+000010F8  5940                     111      SUB.W   #A_Rows,D0      ; move A's traversal back to the first row
+000010FA  5940                     112      SUB.W   #A_Rows,D0      ; sub a second time to increment by words not bytes
+000010FC  C8FC 0002                113      MULU    #2,D4           ; multiply D4 by 2 so it is measured in words
+00001100  3204                     114      MOVE.W  D4,D1           ; offset D1 so it is pointing to next column
+00001102  89FC 0002                115      DIVS    #2,D4           ; Divide D4 by 2 so it returns to its original counter
+00001106  4247                     116      CLR.W   D7              ; reset the sum result
+00001108  60B6                     117      BRA     Loop1
+0000110A                           118  
+0000110A                           119  Stop:
+0000110A                           120  
+0000110A  FFFF FFFF                121      SIMHALT             ; halt simulator
+0000110E                           122  
+0000110E                           123  * Put variables and constants here
+0000110E                           124  
+0000110E= 54 68 65 20 63 75 ...    125  ERRORMSG    DC.B    'The current matrices have invalid dimensions for multiplication',0
+0000114E                           126  
+0000114E                           127      END    START        ; last line of source
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+ANS_ARRAY           5500
+A_ARRAY             4500
+A_COLUMNS           4
+A_ROWS              4
+B_ARRAY             5000
+B_COLUMNS           4
+B_ROWS              4
+ERRORMSG            110E
+LOOP1               10C0
+LOOP2               10C6
+NEXT_COLUMN         10F8
+START               1000
+STOP                110A
+VALID_COLUMNS       10B0
+WORD                2
